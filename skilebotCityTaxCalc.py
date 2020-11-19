@@ -1,6 +1,3 @@
-from sys import exit
-
-
 def check_quit(c):
     command = ['q', 'quit']
     if c in command:
@@ -12,23 +9,26 @@ def check_quit(c):
 def check_buildings(buildings):
     if len(buildings) != 7:
         return False
-    building_C = ['a','b','c','d','e','f','g','h','i','j','k','l','m','x']
+    building_C = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'x']
     for i, c in enumerate(buildings):
         if c not in building_C:
             return False
-        elif c == 'j' and (i != 0 or i != 6):
+        elif c == 'j' and (i != 0 and i != 6):
             print("항구는 맨 끝 칸에 배치하세요. ", end='')
             return False
     return True
+
 
 def reset():
     init_message()
     return loop()
 
+
 def init_message():
     print("")
     print("슷칼봇 도시의 집세 계산 프로그램입니다.")
     print("프로그램을 종료하시려면 q를 리셋하려면 r을 입력하세요")
+
 
 def price_input():
     # return (0, 0)
@@ -62,10 +62,12 @@ def weekend_input():
         print("다시 입력해주세요.")
         weekinput = input("주말이면 yes 아니면 no (y/n): ")
         weekinput = weekinput.lower()
-    if check_quit(weekinput):
-        return weekinput
-    elif weekinput == 'r':
-        return weekinput
+    if check_quit(weekinput):  # 커맨드 판별
+        return weekinput  #
+    elif weekinput == 'r':  #
+        return weekinput  #
+
+    # 주말인 경우 토/일 구별
     elif weekinput == 'y' or weekinput == 'yes':
         weekinput = input("일요일이면 yes 토요일이면 no (y/n): ")
         weekinput = weekinput.lower()
@@ -77,12 +79,42 @@ def weekend_input():
             return weekinput
         elif weekinput == 'r':
             return weekinput
+    # 주말이 아니면 '0' 반환
     else:
         return '0'
+    # 주말이고, 일요일이면 '2' 토요일이면 '1'
     if weekinput == 'y' or weekinput == 'yes':
         return '2'
     elif weekinput == 'n' or weekinput == 'no':
         return '1'
+
+
+def dev_checkCoefficient(coefficient):
+    b_index = ['공터', '주택', '편의점', '학교', '회사', '병원', '은행', '백화점', '호텔', '카지노', '항구', '경기장', '교회', '공장']
+
+    for coef in coefficient:
+        print(coef[0])
+        multiples = [1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        # 효과 개수만큼 반복
+        for a in range(0, coef[1]):
+            effect = coef[2 + a]  # 효과 가져오기
+            ef_build = []
+            print(a+1,'번째 효과 범위: ', effect[0], ', 배수: ', effect[-1], sep='')
+            for x in range(effect[1]):
+                index = effect[2+x]
+                ef_build.append(b_index[index])
+            if len(ef_build) == 0:
+                ef_build = b_index[:]
+            for i, v in enumerate(multiples):
+                if b_index[i] in ef_build:
+                    multiples[i] = multiples[i] * effect[-1]
+        print('[', end='')
+        for b in b_index:
+            print(b, end=', ')
+        print(']')
+        print(multiples)
+
+    print('')
 
 
 def loop():
@@ -131,7 +163,7 @@ def loop():
                        ('주택', 0), ('편의점', 2, (2, 2, 1, 3, 4), (3, 1, 2, 0.7)), ('학교', 2, (4, 1, 1, 3), (2, 1, 8, 0.5)),
                        ('회사', 1, (3, 10, 1, 2, 5, 6, 7, 8, 10, 11, 12, 13, 2)), ('병원', 1, (0, 0, 1.5)),
                        ('은행', 1, (1, 1, 5, 5)),
-                       ('백화점', 2, (1, 0, 3, 5), (0, 1, 2, 0)),
+                       ('백화점', 2, (1, 0, 3.5), (0, 1, 2, 0)),
                        ('호텔', 2, (0, 9, 2, 4, 5, 6, 7, 10, 11, 12, 13, 2), (0, 1, 1, 0.5)),
                        ('카지노', 3, (2, 1, 1, 0.5), (0, 1, 9, 0.5), (1, 1, 8, 2)), ('항구', 1, (0, 3, 8, 9, 10, 3)),
                        ('경기장', 1, (2, 0, 0.2)), ('교회', 1, [2, 2, 1, 4, 1.5]), ('공장', 1, (3, 0, 0)))
@@ -139,28 +171,29 @@ def loop():
         # 효과 개수 == 0, nothing
         # place == 0, 전범위,
         # 건물종류개수 == 0, 모든 건물, 종류X
-
+        # dev_checkCoefficient(coefficient)
         if weekinput == '2':
             coefficient[12][2][4] = 5
 
         for i, b in enumerate(buildings):
             index = b_index.index(b)
-            coef = coefficient[index]
-            if b == 'k' and weekinput == '1':
-                multiples[i] = multiples[i]*4
+            coef = coefficient[index]  # 효과 목록 가져오기
+            if b == 'k' and weekinput == '1':  # 토요일 경기장은 자기 집세 4배
+                multiples[i] = multiples[i] * 4
+            # 효과 개수만큼 반복
             for a in range(0, coef[1]):
-                effect = coef[2+a]
-                for ef_idx in range(0,7):
+                effect = coef[2 + a]  # 효과 가져오기
+                for ef_idx in range(0, 7):
                     if ef_idx == i:
                         continue
-                    elif abs(ef_idx-i) <= effect[0] or effect[0] == 0:
+                    elif abs(ef_idx - i) <= effect[0] or effect[0] == 0:
                         ef_build = []
                         for tempi in range(effect[1]):
-                            ef_build.append(b_index[effect[2+tempi]])
+                            ef_build.append(b_index[effect[2 + tempi]])
                         if len(ef_build) == 0:
                             ef_build = b_index[:]
                         if buildings[ef_idx] in ef_build:
-                            multiples[ef_idx] = multiples[ef_idx]*effect[-1]
+                            multiples[ef_idx] = multiples[ef_idx] * effect[-1]
         print('')
         names = "건물:"
         taxes = "집세:"
